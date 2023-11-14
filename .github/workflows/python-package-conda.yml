@@ -25,7 +25,7 @@ jobs:
         TAG=${GITHUB_REF#refs/tags/}
         echo ::set-output name=tag_name::${TAG}
     - name: login to dockerhub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login  ${{ secrets.DOCKER_REPO }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login registry.cn-hangzhou.aliyuncs.com -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
     - name: sync image
       run: |
