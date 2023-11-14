@@ -19,4 +19,7 @@ jobs:
 
     - name: sync image
       run: |
+        git config --global user.name "oldthreefeng"
+        git config --global user.email "daoren@gaoding.com"
+        git remote -v
         git add . && git commit -m "by workflow" && git push origin v2.0.3
