@@ -1,0 +1,41 @@
+name: Python Package using Conda
+
+on:
+  push:
+    branches-ignore:
+      - '**'
+    tags:
+      - '*'
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 5
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+    - name: Prepare
+      id: prepare
+      run: |
+        TAG=${GITHUB_REF#refs/tags/}
+        echo ::set-output name=tag_name::${TAG}
+    - name: login to dockerhub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login  ${{ secrets.DOCKER_REPO }} -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+
+    - name: sync image
+      run: |
+        VERSION=${{ steps.prepare.outputs.tag_name }}
+        git clone -b ${{ steps.prepare.outputs.tag_name }} https://github.com/kubeflow/pipelines.git
+        curl -Lo ./kustomize https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64 && chmod +x kustomize
+        ./kustomize build pipelines/manifests/kustomize/cluster-scoped-resources/ > kustomize/crd.yaml
+        ./kustomize build pipelines/manifests/kustomize/env/dev | sed  's@gcr.io/ml-pipeline/@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g'  | sed 's@gcr.io/tfx-oss-public@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g' > kustomize/deploy.yaml
+        ./kustomize build pipelines/manifests/kustomize/env/dev | grep "image: " |awk '$2 != "" { print $2}' |sort -u | grep -v image > images.txt
+        python3 sync.py
+        
+    
+ 
