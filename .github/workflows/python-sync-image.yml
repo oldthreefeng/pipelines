@@ -1,4 +1,4 @@
-name: Python Package using Conda
+name: Python-Sync-Image 
 
 on:
   push:
@@ -36,14 +36,11 @@ jobs:
         curl -Lo ./kustomize_3 https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64 && chmod +x kustomize_3
         ./kustomize_3 build pipelines/manifests/kustomize/cluster-scoped-resources/ > crd.yaml
         ./kustomize_3 build pipelines/manifests/kustomize/env/dev | sed  's@gcr.io/ml-pipeline/@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g'  | sed 's@gcr.io/tfx-oss-public@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g' > deploy.yaml
-        ./kustomize_3 build pipelines/manifests/kustomize/env/dev | grep "image: " |awk '$2 != "" { print $2}' |sort -u | grep -v image > images.txt
+        ./kustomize_3 build pipelines/manifests/kustomize/env/dev | grep "gcr.io/" |awk -F 'gcr' '{ print "gcr"$2}' | sort -u > images.txt
         rm -rf pipelines
         git config --global user.name "oldthreefeng"
         git config --global user.email "daoren@gaoding.com"
         git clone https://${GITHUB_TOKEN}@github.com/oldthreefeng/pipelines.git
         cd pipelines && mkdir resources/${{ steps.prepare.outputs.tag_name }}  && cp ../crd.yaml ../deploy.yaml  resources/${{ steps.prepare.outputs.tag_name }}/
-        git add . && git commit -m "add ${{ steps.prepare.outputs.tag_name }} kustomize resources by workflows" && git push origin main
+        git add . && git commit -m "add ${{ steps.prepare.outputs.tag_name }} kustomize resources by workflows" && git push origin main -f
         cp ../images.txt . && python3 sync.py
-        
-    
- 
