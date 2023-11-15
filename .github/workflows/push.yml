@@ -23,6 +23,7 @@ jobs:
       run: |
         git config --global user.name "oldthreefeng"
         git config --global user.email "daoren@gaoding.com"
-        git remote -v
+        git clone https://${GITHUB_TOKEN}@github.com/oldthreefeng/pipelines.git 
+        cd pipelines
         echo 123 > test.txt
-        git add . && git commit -m "by workflow" && git checkout -b v2.0.3 && git push origin v2.0.3
+        git add . && git commit -m "by workflow"  && git push origin main
