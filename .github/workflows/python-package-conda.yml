@@ -33,8 +33,7 @@ jobs:
       run: |
         VERSION=${{ steps.prepare.outputs.tag_name }}
         git clone -b ${{ steps.prepare.outputs.tag_name }} https://github.com/kubeflow/pipelines.git
-        cd ../ && curl -Lo ./kustomize_3 https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64 && chmod +x kustomize_3
-
+        curl -Lo ./kustomize_3 https://github.com/kubernetes-sigs/kustomize/releases/download/v3.2.0/kustomize_3.2.0_linux_amd64 && chmod +x kustomize_3
         ./kustomize_3 build pipelines/manifests/kustomize/cluster-scoped-resources/ > crd.yaml
         ./kustomize_3 build pipelines/manifests/kustomize/env/dev | sed  's@gcr.io/ml-pipeline/@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g'  | sed 's@gcr.io/tfx-oss-public@registry.cn-hangzhou.aliyuncs.com/mlops-pipeline@g' > deploy.yaml
         ./kustomize_3 build pipelines/manifests/kustomize/env/dev | grep "image: " |awk '$2 != "" { print $2}' |sort -u | grep -v image > images.txt
